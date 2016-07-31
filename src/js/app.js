@@ -2,10 +2,11 @@ var $ = require('jquery');
 global.jQuery = $;
 require('bootstrap-sass');
 
-
-
+console.log('llego aqui');
 
 var projecto = require('./projects');
+
+console.log('y aqui no');
 
 if (window.location.pathname == '/detalle.html'){
     projecto.loadDetalle();

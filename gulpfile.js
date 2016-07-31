@@ -6,8 +6,16 @@ var browserSync = require('browser-sync').create();
 var browserify = require('browserify');
 var tap = require('gulp-tap');
 var buffer = require('gulp-buffer');
+var sourcemaps = require('gulp-sourcemaps');
+var imagemin = require('gulp-imagemin');
+var cssnano = require('cssnano');
+var postcss = require('gulp-postcss');
+var autoprefixer = require('autoprefixer');
+
+
 
 var jsFiles = ["src/js/*.js", "src/js/**/*.js"];
+var imgDir = [, "/images/*",];
 
 gulp.task("default", ["compile-sass", "concat-js"], function(){
 		browserSync.init({
@@ -19,7 +27,9 @@ gulp.task("default", ["compile-sass", "concat-js"], function(){
 	gulp.watch("src/scss/*.scss", ["compile-sass"]);
 
 	gulp.watch("./*.html").on("change", browserSync.reload);
-	});
+	
+	gulp.watch(jsFiles, ["concat-js"]);	
+});
 
 
 
@@ -28,11 +38,20 @@ gulp.task("default", ["compile-sass", "concat-js"], function(){
 
 //definimos la tarea compile-sass
 gulp.task("compile-sass", function(){
-	gulp.src("./src/scss/style.scss") //cargamos el archivo
-	.pipe(sass().on('error', sass.logError)) //detecta un error
-	.pipe(gulp.dest("./dist/css/")) //guardamos el archivo en dist/css
-	.pipe(notify("SASS compiled"))
-	.pipe(browserSync.stream());
+	gulp.src("./src/scss/style.scss") // cargamos le archivo
+		.pipe(sourcemaps.init())
+		.pipe(sass().on('error', sass.logError)) // compilamos el archivo SASS
+		.pipe(postcss([
+			autoprefixer(), // autoprefija automáticamente el CSS
+			cssnano() // minifica el CSS
+		]))
+		.pipe(sourcemaps.write('./')) // escribimos los sourcemaps
+		.pipe(gulp.dest("./dist/css/")) // guardamos el archivo en dist/css
+		.pipe(notify({
+			title: "SASS",
+			message: "Compiled 🤘"
+		}))
+		.pipe(browserSync.stream());
 });
 
 gulp.task("concat-js", function(){
@@ -49,4 +68,10 @@ gulp.task("concat-js", function(){
 	.pipe(browserSync.stream());
 
 
+});
+
+gulp.task("images-optimization", function(){
+	gulp.src(imgDir)
+		.pipe(imagemin())
+		.pipe(gulp.dest('/images/min/'));
 });
